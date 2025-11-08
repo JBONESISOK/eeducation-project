@@ -5,18 +5,23 @@ void button_init(button_t* btn, pin_t pin) {
     // associated hardware what it should do
 
     // (Hint), you'll want to set up an interrupt!
+    btn->pin = pin;
+    pinMode(pin, INPUT);
+    attach_button_interrupt(btn, pin);
 }
 
 void button_set_callback(button_t* btn, void (*cb)(button_t* ctx), void* ctx) {
     // Update the button struct to set the user callback
-
+    btn->callback = cb;
+    btn->ctx = ctx;
     // You'll want to store the ctx pointer in the button
     // And do some other things
 }
 
 bool button_read(const button_t* btn) {
     // Check if this button has been read
-    return false;
+    int buttonVal = digitalRead(btn->pin);
+    return buttonVal == HIGH;
 }
 
 static void __button_callback(void *ctx) {
@@ -24,6 +29,7 @@ static void __button_callback(void *ctx) {
 
     // Something has triggered the interrupt, what should happen?
     // Perhaps call the user callback?
+    if (btn->callback) btn->callback(btn);
 }
 
 void attach_button_interrupt(button_t *btn, pin_t pin) {

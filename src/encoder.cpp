@@ -4,12 +4,18 @@ static void __encoder_isr_a(void* ctx) {
     encoder_t* enc = (encoder_t*)ctx;
 
     // What do we do now? We have spun in a certain direction
+    int channel_a = digitalRead(enc->pin_a);
+
+    if (enc->spin_cb) enc->spin_cb(enc, -1);
 }
 
 static void __encoder_isr_b(void* ctx) {
     encoder_t* enc = (encoder_t*)ctx;
-
+    
     // What do we do now? We have spun in a certain direction
+    int channel_b = digitalRead(enc->pin_b); 
+
+    if (enc->spin_cb) enc->spin_cb(enc, 1);
 }
 
 static void __encoder_isr_btn(void* ctx) {
@@ -21,6 +27,15 @@ static void __encoder_isr_btn(void* ctx) {
 void encoder_init(encoder_t* enc, pin_t pin_a, pin_t pin_b, pin_t pin_btn) {
     // Initialize the encoder struct by giving it reasonable values
     // And initialize the hardware if needed
+    enc->pin_a = pin_a;
+    enc->pin_b = pin_b;
+    enc->pin_btn = pin_btn;
+
+    pinMode(pin_a, INPUT);
+    pinMode(pin_b, INPUT);
+    pinMode(pin_btn, INPUT);
+
+    attach_encoder_interrupts(enc);
 }
 
 void encoder_set_spin_callback(encoder_t* enc, void (*cb)(encoder_t* enc, int32_t delta)) {
